@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - SmartGrade</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .welcome-card {
+            background: linear-gradient(45deg, #2193b0, #6dd5ed);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .grade-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .subject-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .subject-card:hover {
+            transform: translateY(-5px);
+        }
+        .grade-A-plus { color: #28a745; }
+        .grade-A { color: #5cb85c; }
+        .grade-B { color: #ffc107; }
+        .grade-C { color: #fd7e14; }
+        .grade-D { color: #dc3545; }
+        .grade-F { color: #dc3545; }
+        .recommendation-card {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .recommendation-item {
+            border-left: 4px solid #2193b0;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    {% extends "base.html" %}
+    {% block content %}
+    <div class="container py-4">
+        <!-- Welcome Card -->
+        <div class="card welcome-card mb-4">
+            <div class="card-body">
+                <h1 class="display-4">Welcome, {{ student.name }}!</h1>
+                <p class="lead">Student ID: {{ student.student_id }}</p>
+                <p class="mb-0">Department: {{ student.department }} | Year: {{ student.year }}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Overall Performance Card -->
+            <div class="col-md-4 mb-4">
+                <div class="card stats-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Overall Performance</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-0">{{ avg_marks|round(2) }}%</h2>
+                                <p class="text-muted mb-0">Average Marks</p>
+                            </div>
+                            <div class="text-end">
+                                <h2 class="mb-0 grade-{{ student.predicted_grade }}">{{ student.predicted_grade }}</h2>
+                                <p class="text-muted mb-0">Predicted Grade</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Card -->
+            <div class="col-md-4 mb-4">
+                <div class="card stats-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-user-clock me-2"></i>Attendance</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-0">{{ student.attendance|round(2) }}%</h2>
+                                <p class="text-muted mb-0">Overall Attendance</p>
+                            </div>
+                            <div class="text-end">
+                                <h2 class="mb-0">{{ student.assignment_score|round(2) }}%</h2>
+                                <p class="text-muted mb-0">Assignment Score</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="col-md-4 mb-4">
+                <div class="card stats-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-cog me-2"></i>Actions</h5>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('download_marksheet') }}" class="btn btn-primary">
+                                <i class="fas fa-download me-2"></i>Download Marksheet
+                            </a>
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#shareModal">
+                                <i class="fas fa-share-alt me-2"></i>Share Marksheet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject-wise Performance -->
+        <div class="card grade-card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-book me-2"></i>Subject-wise Performance</h5>
+                <div class="row">
+                    {% for subject, marks in subject_marks.items() %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card subject-card h-100">
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">Subject {{ loop.index }}</h6>
+                                <h2 class="card-title">{{ marks|round(2) }}%</h2>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ marks }}%" 
+                                         aria-valuenow="{{ marks }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations and Remedies -->
+        <div class="card recommendation-card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i>Recommendations & Remedies</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="recommendation-item">
+                            <h6><i class="fas fa-check-circle text-success me-2"></i>Study Recommendations</h6>
+                            <ul class="list-unstyled">
+                                {% if avg_marks >= 90 %}
+                                <li><i class="fas fa-arrow-right me-2"></i>Continue your excellent study habits</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Consider advanced topics in your field</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Mentor other students to reinforce your knowledge</li>
+                                {% elif avg_marks >= 75 %}
+                                <li><i class="fas fa-arrow-right me-2"></i>Focus on maintaining consistent study schedule</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Review challenging topics regularly</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Participate more in class discussions</li>
+                                {% elif avg_marks >= 60 %}
+                                <li><i class="fas fa-arrow-right me-2"></i>Increase study time by 1-2 hours daily</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Create detailed study notes</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Seek help from teachers for difficult topics</li>
+                                {% else %}
+                                <li><i class="fas fa-arrow-right me-2"></i>Develop a strict study schedule</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Attend all classes and take detailed notes</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Meet with teachers for extra help</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="recommendation-item">
+                            <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>Areas for Improvement</h6>
+                            <ul class="list-unstyled">
+                                {% if avg_marks >= 90 %}
+                                <li><i class="fas fa-arrow-right me-2"></i>Challenge yourself with advanced projects</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Develop leadership skills</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Explore research opportunities</li>
+                                {% elif avg_marks >= 75 %}
+                                <li><i class="fas fa-arrow-right me-2"></i>Improve time management skills</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Focus on weak subjects</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Enhance problem-solving abilities</li>
+                                {% elif avg_marks >= 60 %}
+                                <li><i class="fas fa-arrow-right me-2"></i>Improve attendance and participation</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Complete all assignments on time</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Join study groups</li>
+                                {% else %}
+                                <li><i class="fas fa-arrow-right me-2"></i>Improve attendance immediately</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Complete all pending assignments</li>
+                                <li><i class="fas fa-arrow-right me-2"></i>Attend remedial classes</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shareModalLabel">Share Marksheet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ url_for('share_marksheet') }}">
+                        <div class="mb-3">
+                            <label class="form-label">Share via:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="method" id="whatsapp" value="whatsapp" checked>
+                                <label class="form-check-label" for="whatsapp">
+                                    <i class="fab fa-whatsapp"></i> WhatsApp
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="method" id="email" value="email">
+                                <label class="form-check-label" for="email">
+                                    <i class="fas fa-envelope"></i> Email
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="method" id="sms" value="sms">
+                                <label class="form-check-label" for="sms">
+                                    <i class="fas fa-sms"></i> SMS
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3" id="emailField" style="display: none;">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Share</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('input[name="method"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('emailField').style.display = 
+                    this.value === 'email' ? 'block' : 'none';
+            });
+        });
+    </script>
+    {% endblock %}
+</body>
+</html> 

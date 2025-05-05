@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Department Dashboard - {{ current_user.department }}</h2>
+    
+    <!-- Year Selection -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Select Year</h5>
+                    <form method="GET" action="{{ url_for('department_dashboard') }}" class="row g-3">
+                        <div class="col-md-6">
+                            <select class="form-select" name="year" onchange="this.form.submit()">
+                                <option value="">All Years</option>
+                                <option value="1" {% if selected_year == '1' %}selected{% endif %}>1st Year</option>
+                                <option value="2" {% if selected_year == '2' %}selected{% endif %}>2nd Year</option>
+                                <option value="3" {% if selected_year == '3' %}selected{% endif %}>3rd Year</option>
+                                <option value="4" {% if selected_year == '4' %}selected{% endif %}>4th Year</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% if selected_year %}Year {{ selected_year }}{% else %}Department{% endif %} Statistics</h5>
+                    <p class="card-text">Total Students: {{ total_students }}</p>
+                    <p class="card-text">Average Attendance: {{ "%.2f"|format(avg_attendance) }}%</p>
+                    <p class="card-text">Average Assignment Score: {{ "%.2f"|format(avg_assignment) }}%</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Grade Distribution</h5>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ (grade_counts['A+'] / total_students * 100)|round }}%">
+                            A+ ({{ grade_counts['A+'] }})
+                        </div>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ (grade_counts['A'] / total_students * 100)|round }}%">
+                            A ({{ grade_counts['A'] }})
+                        </div>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ (grade_counts['B'] / total_students * 100)|round }}%">
+                            B ({{ grade_counts['B'] }})
+                        </div>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ (grade_counts['C'] / total_students * 100)|round }}%">
+                            C ({{ grade_counts['C'] }})
+                        </div>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: {{ (grade_counts['D'] / total_students * 100)|round }}%">
+                            D ({{ grade_counts['D'] }})
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: {{ (grade_counts['F'] / total_students * 100)|round }}%">
+                            F ({{ grade_counts['F'] }})
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Student Performance</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Year</th>
+                            <th>Subject 1</th>
+                            <th>Subject 2</th>
+                            <th>Subject 3</th>
+                            <th>Subject 4</th>
+                            <th>Subject 5</th>
+                            <th>Attendance</th>
+                            <th>Assignment</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.student_id }}</td>
+                            <td>{{ student.name }}</td>
+                            <td>{{ student.year }}</td>
+                            <td>{{ student.subject1 }}%</td>
+                            <td>{{ student.subject2 }}%</td>
+                            <td>{{ student.subject3 }}%</td>
+                            <td>{{ student.subject4 }}%</td>
+                            <td>{{ student.subject5 }}%</td>
+                            <td>{{ student.attendance }}%</td>
+                            <td>{{ student.assignment_score }}%</td>
+                            <td>{{ student.predicted_grade }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
